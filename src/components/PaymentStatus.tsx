@@ -41,8 +41,9 @@ const PaymentStatus = () => {
         });
 
         const data = await response.json();
+        console.log('API Response:', data);
+        console.log('Status received:', data.detail.status);
         setApiResponse(data);
-        console.log(data);
         setLoading(false);
         
       } catch (error) {
@@ -75,8 +76,9 @@ const PaymentStatus = () => {
   }
 
   const status = apiResponse?.detail?.status || 'UNKNOWN';
+  console.log('Current status:', status);
   const message = apiResponse?.detail?.message || 'No response received';
-  const isSuccess = status === 'SUCCESS';
+  const isSuccess = status !== 'ERROR'; // Consider any non-ERROR status as success
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -94,6 +96,9 @@ const PaymentStatus = () => {
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
             {message}
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Status: {status}
           </p>
         </div>
       </Card>
