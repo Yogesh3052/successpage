@@ -31,7 +31,7 @@ const PaymentStatus = () => {
       try {
         setLoading(true);
         
-        const response = await fetch(`https://paymentstatus.up.railway.app/aiservice-paymentgateway/${paymentId}`, {
+        const response = await fetch(`https://aiservice-paymentgateway.up.railway.app/paymentstatus/${paymentId}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
