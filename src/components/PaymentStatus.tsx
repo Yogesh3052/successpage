@@ -8,26 +8,37 @@ const PaymentStatus = () => {
   const { paymentId } = useParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorCode, setErrorCode] = useState<number | null>(null);
+  const [errorDetails, setErrorDetails] = useState<string>('');
 
   useEffect(() => {
     const verifyPayment = async () => {
       if (!paymentId) {
         setStatus('error');
         setErrorCode(400);
+        setErrorDetails('Payment ID is missing');
         return;
       }
 
       try {
         // First set to loading state
         setStatus('loading');
+        console.log('Verifying payment for ID:', paymentId);
         
         // Make the API call with the payment ID from URL
-        const response = await fetch(`https://paymentstatus.up.railway.app/paymentstatus/verify/${paymentId}`, {
+        const response = await fetch(`https://paymentstatus.up.railway.app/paymentstatus/${paymentId}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Origin': window.location.origin
           },
         });
+
+        console.log('Response status:', response.status);
+        
+        // Try to get response text even if it's an error
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
 
         // Simply check the status code
         if (response.status === 200) {
@@ -35,12 +46,14 @@ const PaymentStatus = () => {
         } else {
           setStatus('error');
           setErrorCode(response.status);
+          setErrorDetails(responseText || 'No error details available');
         }
       } catch (error) {
         // Handle network or other errors
         console.error('Payment verification error:', error);
         setStatus('error');
         setErrorCode(500);
+        setErrorDetails(error instanceof Error ? error.message : 'Unknown error occurred');
       }
     };
 
@@ -55,6 +68,7 @@ const PaymentStatus = () => {
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto"></div>
             <p className="mt-4 text-muted-foreground">Verifying payment status...</p>
+            <p className="mt-2 text-sm text-muted-foreground">Payment ID: {paymentId}</p>
           </div>
         )}
 
@@ -89,6 +103,9 @@ const PaymentStatus = () => {
             </p>
             {errorCode && (
               <p className="mt-2 text-sm text-muted-foreground">Status Code: {errorCode}</p>
+            )}
+            {errorDetails && (
+              <p className="mt-2 text-xs text-muted-foreground/80 break-all">{errorDetails}</p>
             )}
             <Button variant="destructive" className="mt-6" onClick={() => window.location.href = '/checkout'}>
               Try Again
