@@ -92,7 +92,7 @@ const PaymentStatus = () => {
             )}
           </div>
           <h2 className="mt-4 text-2xl font-bold text-foreground">
-            {isSuccess ? 'Success' : 'Failed'}
+            {isSuccess ? 'Failed' : 'Success'}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
             {message}
