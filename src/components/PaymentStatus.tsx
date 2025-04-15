@@ -31,7 +31,7 @@ const PaymentStatus = () => {
       try {
         setLoading(true);
         
-        const response = await fetch(`https://paymentstatus.up.railway.app/paymentstatus/${paymentId}`, {
+        const response = await fetch(`https://paymentstatus.up.railway.app/aiservice-paymentgateway/${paymentId}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -42,6 +42,7 @@ const PaymentStatus = () => {
 
         const data = await response.json();
         setApiResponse(data);
+        console.log(data);
         setLoading(false);
         
       } catch (error) {
@@ -75,7 +76,7 @@ const PaymentStatus = () => {
 
   const status = apiResponse?.detail?.status || 'UNKNOWN';
   const message = apiResponse?.detail?.message || 'No response received';
-  const isSuccess = status === 'PENDING'; // Consider PENDING as success
+  const isSuccess = status === 'SUCCESS'; // Only SUCCESS is considered success
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -89,7 +90,7 @@ const PaymentStatus = () => {
             )}
           </div>
           <h2 className="mt-4 text-2xl font-bold text-foreground">
-            {isSuccess ? 'Success' : status}
+            {isSuccess ? 'Success' : 'Failed'}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
             {message}
