@@ -76,7 +76,7 @@ const PaymentStatus = () => {
 
   const status = apiResponse?.detail?.status || 'UNKNOWN';
   const message = apiResponse?.detail?.message || 'No response received';
-  const isSuccess = status === 'SUCCESS'; // Only SUCCESS is considered success
+  const isSuccess = status === 'SUCCESS';
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -90,7 +90,7 @@ const PaymentStatus = () => {
             )}
           </div>
           <h2 className="mt-4 text-2xl font-bold text-foreground">
-            {isSuccess ? 'Failed' : 'Success'}
+            {isSuccess ? 'Success' : 'Failed'}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
             {message}
