@@ -4,27 +4,34 @@ import { CheckCircle2, XCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
+interface ApiResponse {
+  detail: {
+    status: string;
+    message: string;
+  };
+}
+
 const PaymentStatus = () => {
   const { paymentId } = useParams();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [errorCode, setErrorCode] = useState<number | null>(null);
-  const [errorDetails, setErrorDetails] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
 
   useEffect(() => {
     const verifyPayment = async () => {
       if (!paymentId) {
-        setStatus('error');
-        setErrorCode(400);
-        setErrorDetails('Payment ID is missing');
+        setApiResponse({
+          detail: {
+            status: 'ERROR',
+            message: 'Payment ID is missing'
+          }
+        });
+        setLoading(false);
         return;
       }
 
       try {
-        // First set to loading state
-        setStatus('loading');
-        console.log('Verifying payment for ID:', paymentId);
+        setLoading(true);
         
-        // Make the API call with the payment ID from URL
         const response = await fetch(`https://paymentstatus.up.railway.app/paymentstatus/${paymentId}`, {
           method: 'POST',
           headers: {
@@ -34,84 +41,61 @@ const PaymentStatus = () => {
           },
         });
 
-        console.log('Response status:', response.status);
+        const data = await response.json();
+        setApiResponse(data);
+        setLoading(false);
         
-        // Try to get response text even if it's an error
-        const responseText = await response.text();
-        console.log('Response text:', responseText);
-
-        // Simply check the status code
-        if (response.status === 200) {
-          setStatus('success');
-        } else {
-          setStatus('error');
-          setErrorCode(response.status);
-          setErrorDetails(responseText || 'No error details available');
-        }
       } catch (error) {
-        // Handle network or other errors
         console.error('Payment verification error:', error);
-        setStatus('error');
-        setErrorCode(500);
-        setErrorDetails(error instanceof Error ? error.message : 'Unknown error occurred');
+        setApiResponse({
+          detail: {
+            status: 'ERROR',
+            message: error instanceof Error ? error.message : 'Unknown error occurred'
+          }
+        });
+        setLoading(false);
       }
     };
 
-    // Call the verification function immediately
     verifyPayment();
-  }, [paymentId]); // Only re-run if paymentId changes
+  }, [paymentId]);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="max-w-md w-full p-8">
-        {status === 'loading' && (
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="max-w-md w-full p-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto"></div>
             <p className="mt-4 text-muted-foreground">Verifying payment status...</p>
             <p className="mt-2 text-sm text-muted-foreground">Payment ID: {paymentId}</p>
           </div>
-        )}
+        </Card>
+      </div>
+    );
+  }
 
-        {status === 'success' && (
-          <div className="text-center">
-            <div className="w-24 h-24 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center mx-auto">
+  const status = apiResponse?.detail?.status || 'UNKNOWN';
+  const message = apiResponse?.detail?.message || 'No response received';
+  const isSuccess = status === 'PENDING'; // Consider PENDING as success
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Card className="max-w-md w-full p-8">
+        <div className="text-center">
+          <div className={`w-24 h-24 rounded-full ${isSuccess ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'} flex items-center justify-center mx-auto`}>
+            {isSuccess ? (
               <CheckCircle2 className="w-16 h-16 text-green-500 dark:text-green-400" />
-            </div>
-            <h2 className="mt-4 text-2xl font-bold text-foreground">Payment Successful!</h2>
-            <p className="mt-2 text-muted-foreground">Your payment has been verified successfully.</p>
-            <Button className="mt-6 gap-2" onClick={() => window.location.href = '/dashboard'}>
-              Go to Dashboard
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </Button>
-          </div>
-        )}
-
-        {status === 'error' && (
-          <div className="text-center">
-            <div className="w-24 h-24 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mx-auto">
+            ) : (
               <XCircle className="w-16 h-16 text-red-500 dark:text-red-400" />
-            </div>
-            <h2 className="mt-4 text-2xl font-bold text-foreground">Payment Verification Failed</h2>
-            <p className="mt-2 text-muted-foreground">
-              {errorCode === 400 
-                ? 'Invalid payment ID provided.'
-                : errorCode === 500 
-                ? 'A server error occurred while verifying the payment.'
-                : 'Payment verification failed.'}
-            </p>
-            {errorCode && (
-              <p className="mt-2 text-sm text-muted-foreground">Status Code: {errorCode}</p>
             )}
-            {errorDetails && (
-              <p className="mt-2 text-xs text-muted-foreground/80 break-all">{errorDetails}</p>
-            )}
-            <Button variant="destructive" className="mt-6" onClick={() => window.location.href = '/checkout'}>
-              Try Again
-            </Button>
           </div>
-        )}
+          <h2 className="mt-4 text-2xl font-bold text-foreground">
+            {isSuccess ? 'Success' : status}
+          </h2>
+          <p className="mt-4 text-lg text-muted-foreground">
+            {message}
+          </p>
+        </div>
       </Card>
     </div>
   );
