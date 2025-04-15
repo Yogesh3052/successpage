@@ -96,7 +96,7 @@ function App() {
     <div className="dark">
       <Router>
         <Routes>
-          <Route path="/payment-status" element={<PaymentStatus />} />
+          <Route path="/:paymentId" element={<PaymentStatus />} />
           <Route path="/" element={<PaymentResult status="success" />} />
         </Routes>
       </Router>
