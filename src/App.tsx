@@ -34,11 +34,11 @@ function PaymentResult({ status }: { status: 'success' | 'failure' }) {
             >
               {status === 'success' ? (
                 <div className="w-24 h-24 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-                  <CheckCircle2 className="w-16 h-16 text-green-500 dark:text-green-400" />
+                  <XCircle className="w-16 h-16 text-green-500 dark:text-green-400" />
                 </div>
               ) : (
                 <div className="w-24 h-24 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-                  <XCircle className="w-16 h-16 text-red-500 dark:text-red-400" />
+                  <CheckCircle2 className="w-16 h-16 text-red-500 dark:text-red-400" />
                 </div>
               )}
             </motion.div>
