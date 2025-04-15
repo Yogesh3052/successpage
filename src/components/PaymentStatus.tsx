@@ -32,7 +32,7 @@ const PaymentStatus = () => {
         setLoading(true);
         
         const response = await fetch(`https://aiservice-paymentgateway.up.railway.app/paymentstatus/${paymentId}`, {
-          method: 'POST',
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
