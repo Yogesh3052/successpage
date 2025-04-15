@@ -77,7 +77,7 @@ const PaymentStatus = () => {
 
   const status = apiResponse?.detail?.status || 'UNKNOWN';
   console.log('Current status:', status);
-  const message = apiResponse?.detail?.message || 'No response received';
+  // const message = apiResponse?.detail?.message || 'No response received';
   const isSuccess = status !== 'ERROR'; // Consider any non-ERROR status as success
 
   return (
@@ -86,20 +86,20 @@ const PaymentStatus = () => {
         <div className="text-center">
           <div className={`w-24 h-24 rounded-full ${isSuccess ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'} flex items-center justify-center mx-auto`}>
             {isSuccess ? (
-              <CheckCircle2 className="w-16 h-16 text-green-500 dark:text-green-400" />
-            ) : (
               <XCircle className="w-16 h-16 text-red-500 dark:text-red-400" />
+            ) : (
+              <CheckCircle2 className="w-16 h-16 text-green-500 dark:text-green-400" />
             )}
           </div>
           <h2 className="mt-4 text-2xl font-bold text-foreground">
             {isSuccess ? 'Failed' : 'Success'}
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground">
+          {/* <p className="mt-4 text-lg text-muted-foreground">
             {message}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
             Status: {status}
-          </p>
+          </p> */}
         </div>
       </Card>
     </div>
