@@ -94,6 +94,11 @@ const PaymentStatus = () => {
           <h2 className="mt-4 text-2xl font-bold text-foreground">
             {isSuccess ? 'Failed' : 'Success'}
           </h2>
+          <button className="text-green-500 hover:text-green-600" onClick={() => {
+            window.location.href = 'http://13.127.169.173';
+          }}>
+            Go to Dashboard
+          </button>
           {/* <p className="mt-4 text-lg text-muted-foreground">
             {message}
           </p>
