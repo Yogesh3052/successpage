@@ -38,66 +38,115 @@ const PaymentStatus = () => {
         return;
       }
 
-      try {
-        setLoading(true);
-        
-        const response = await fetch(`https://aiservice-paymentgateway.up.railway.app/paymentstatus/${paymentId}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Origin': window.location.origin
-          },
-        });
+      const MAX_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+      const POLL_INTERVAL = 5 * 1000; // 5 seconds in milliseconds
+      let timeoutId: NodeJS.Timeout;
+      let intervalId: NodeJS.Timeout;
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      const checkPaymentStatus = async () => {
+        try {
+          const response = await fetch(`https://aiservice-paymentgateway.up.railway.app/paymentstatus/${paymentId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Origin': window.location.origin
+            },
+          });
 
-        const data = await response.json();
-        console.log('Raw API Response:', JSON.stringify(data, null, 2));
-        
-        // Validate response structure
-        if (!data) {
-          throw new Error('Empty response from server');
-        }
+          const data = await response.json();
+          console.log('Status code:', response.status);
+          console.log('Raw API Response:', JSON.stringify(data, null, 2));
 
-        if (!data.status || !data.payment_details) {
-          console.error('Invalid response structure:', data);
+          if (response.status === 200) {
+            // Success case - payment is complete and DB is updated
+            clearInterval(intervalId);
+            clearTimeout(timeoutId);
+            setApiResponse(data);
+            setLoading(false);
+          } else if (response.status === 400) {
+            // Error case - payment failed
+            clearInterval(intervalId);
+            clearTimeout(timeoutId);
+            setApiResponse({
+              status: 'error',
+              subscription_id: '',
+              payment_details: {
+                status: 'ERROR',
+                message: 'Payment verification failed',
+                payment_id: '',
+                payment_method: '',
+                payment_completion_time: ''
+              }
+            });
+            setLoading(false);
+          } else if (response.status === 409) {
+            // Continue polling - payment is successful but DB not updated
+            console.log('Payment successful but DB not updated yet, continuing to poll...');
+          } else {
+            // Handle other status codes
+            clearInterval(intervalId);
+            clearTimeout(timeoutId);
+            setApiResponse({
+              status: 'error',
+              subscription_id: '',
+              payment_details: {
+                status: 'ERROR',
+                message: `Unexpected status code: ${response.status}`,
+                payment_id: '',
+                payment_method: '',
+                payment_completion_time: ''
+              }
+            });
+            setLoading(false);
+          }
+        } catch (error) {
+          console.error('Payment verification error:', error);
+          clearInterval(intervalId);
+          clearTimeout(timeoutId);
           setApiResponse({
             status: 'error',
             subscription_id: '',
             payment_details: {
               status: 'ERROR',
-              message: 'Invalid response format',
+              message: error instanceof Error ? error.message : 'Unknown error occurred',
               payment_id: '',
               payment_method: '',
               payment_completion_time: ''
             }
           });
           setLoading(false);
-          return;
         }
+      };
 
-        console.log('Status received:', data.status);
-        setApiResponse(data);
-        setLoading(false);
-        
-      } catch (error) {
-        console.error('Payment verification error:', error);
+      // Start polling
+      intervalId = setInterval(checkPaymentStatus, POLL_INTERVAL);
+
+      // Set timeout for 5 minutes
+      timeoutId = setTimeout(() => {
+        clearInterval(intervalId);
         setApiResponse({
           status: 'error',
           subscription_id: '',
           payment_details: {
             status: 'ERROR',
-            message: error instanceof Error ? error.message : 'Unknown error occurred',
+            message: 'Please Contact support and raise a query',
             payment_id: '',
             payment_method: '',
             payment_completion_time: ''
           }
         });
         setLoading(false);
-      }
+      }, MAX_TIMEOUT);
+
+      // Initial check
+      checkPaymentStatus();
+
+      // Cleanup function
+      return () => {
+        clearInterval(intervalId);
+        clearTimeout(timeoutId);
+      };
     };
 
     verifyPayment();
