@@ -204,7 +204,7 @@ const PaymentStatus = () => {
                   <p><span className="text-muted-foreground">Subscription ID:</span> {apiResponse?.subscription_id}</p>
                   <p><span className="text-muted-foreground">Payment ID:</span> {apiResponse?.payment_details?.payment_id}</p>
                   <p><span className="text-muted-foreground">Payment Method:</span> {apiResponse?.payment_details?.payment_method}</p>
-                  <p><span className="text-muted-foreground">Completion Time:</span> {new Date(apiResponse?.payment_details?.payment_completion_time || '').toLocaleString()}</p>
+                  <p><span className="text-muted-foreground">Payment Time:</span> {new Date(apiResponse?.payment_details?.payment_completion_time || '').toLocaleString()}</p>
                 </div>
               </div>
             </div>
